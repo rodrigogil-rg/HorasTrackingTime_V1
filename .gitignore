@@ -1,0 +1,11 @@
+__pycache__/
+.pytest_cache/
+.coverage
+htmlcov/
+output/
+input/
+.idea/
+.vscode/
+*.pyc
+~$*.xlsx
+.DS_Store
