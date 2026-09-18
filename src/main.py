@@ -13,10 +13,12 @@ from src.parser import parse_csv_file
 from src.transformer import filter_by_month
 from src.validators import validate_month_year
 
+# Configuración del logger principal de la aplicación
 logger = logging.getLogger("trackingtime")
 
 
 def find_csv_file(input_dir: Path) -> Path:
+    """Busca y valida que exista exactamente un archivo CSV en el directorio de entrada."""
     if not input_dir.exists():
         raise InputNotFoundError(f"El directorio input no existe: {input_dir}")
 
@@ -31,6 +33,10 @@ def find_csv_file(input_dir: Path) -> Path:
 
 
 def main() -> int:
+    """Punto de entrada principal de la CLI.
+
+    Orquesta la lectura, validación, transformación y generación del archivo Excel.
+    """
     parser = argparse.ArgumentParser(
         description="Transforma CSV mensual de Tracking Time en Excel."
     )
@@ -43,26 +49,30 @@ def main() -> int:
 
     args = parser.parse_args()
 
+    # Configurar nivel de logging según el argumento --verbose
     logging.basicConfig(
         level=logging.DEBUG if args.verbose else logging.INFO,
         format="%(levelname)s: %(message)s",
     )
 
     try:
+        # Validar mes y año proporcionados
         validate_month_year(args.mes, args.anio)
         input_dir = Path(args.input)
         output_dir = Path(args.output)
 
+        # Buscar el archivo CSV de entrada
         csv_path = find_csv_file(input_dir)
         logger.info(f"Procesando archivo CSV: {csv_path}")
 
+        # Parsear registros y filtrar por el mes y año solicitados
         entries = parse_csv_file(csv_path, override_usuario=args.usuario)
         filtered_entries = filter_by_month(entries, args.mes, args.anio)
 
         if not filtered_entries:
             logger.warning(f"No se encontraron registros para el mes {args.mes}/{args.anio}.")
 
-        # Detect usuario from entries if not provided
+        # Detectar el nombre de usuario de los registros si no fue provisto por parámetro
         usuario = args.usuario
         if not usuario and filtered_entries:
             usuario = filtered_entries[0].usuario
@@ -71,6 +81,7 @@ def main() -> int:
         elif not usuario:
             usuario = "Usuario"
 
+        # Generar el archivo Excel resultante
         output_path = write_excel(filtered_entries, args.mes, args.anio, usuario, output_dir)
         logger.info(f"Planilla generada con éxito: {output_path}")
         return 0

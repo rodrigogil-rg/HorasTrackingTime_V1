@@ -14,14 +14,17 @@ from src.validators import (
 
 
 def parse_csv_file(file_path: Path, override_usuario: str | None = None) -> list[TimeEntry]:
+    """Lee y procesa el archivo CSV de exportación de Tracking Time, convirtiéndolo en objetos TimeEntry."""
     entries = []
     users_found = set()
 
+    # Abrir el archivo CSV con codificación utf-8-sig para manejar correctamente el BOM
     with open(file_path, "r", encoding="utf-8-sig", newline="") as f:
         reader = csv.DictReader(f, delimiter=";")
         if not reader.fieldnames:
             raise validate_headers([])
 
+        # Validar que existan todas las cabeceras obligatorias requeridas
         validate_headers(list(reader.fieldnames))
 
         for idx, row in enumerate(reader, start=2):
@@ -38,6 +41,7 @@ def parse_csv_file(file_path: Path, override_usuario: str | None = None) -> list
             duracion_str = parse_duration(row.get("Duración") or "", idx)
             horas = parse_hours(row.get("Horas") or "", idx)
 
+            # Construir entidad de dominio con cada fila del CSV
             entry = TimeEntry(
                 servicio=row.get("Servicio") or None,
                 cliente=cliente,
@@ -64,10 +68,8 @@ def parse_csv_file(file_path: Path, override_usuario: str | None = None) -> list
             )
             entries.append(entry)
 
+    # Validar que el archivo contenga registros de un único usuario
     if not override_usuario:
         validate_single_user(users_found)
-    elif override_usuario and users_found:
-        # If override is given, we can ensure entries have override_usuario or validate
-        pass
 
     return entries

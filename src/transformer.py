@@ -4,11 +4,12 @@ from src.models import TimeEntry
 
 
 def filter_by_month(entries: list[TimeEntry], mes: int, anio: int) -> list[TimeEntry]:
+    """Filtra los registros correspondientes al mes y año indicados, omitiendo días feriados con 0 horas."""
     filtered = []
     for entry in entries:
         d = entry.fecha
         if d.month == mes and d.year == anio:
-            # Omitir registros FERIADO con 0 horas
+            # Omitir registros FERIADO con 0 horas según reglas de negocio
             if entry.horas == 0.0 and "feriado" in entry.notas.lower():
                 continue
             filtered.append(entry)
@@ -16,16 +17,20 @@ def filter_by_month(entries: list[TimeEntry], mes: int, anio: int) -> list[TimeE
 
 
 def group_by_client(entries: list[TimeEntry]) -> dict[str, list[TimeEntry]]:
+    """Agrupa los registros por cliente ordenando los clientes alfabéticamente
+
+    y los registros internos por fecha de inicio, fecha de fin y tarea.
+    """
     grouped = defaultdict(list)
     for entry in entries:
         grouped[entry.cliente].append(entry)
 
-    # Sort clients alphabetically
+    # Ordenar clientes alfabéticamente
     sorted_clients = sorted(grouped.keys())
     result = {}
     for client in sorted_clients:
         client_entries = grouped[client]
-        # Sort by 1. fecha_inicio, 2. fecha_fin, 3. tarea
+        # Orden determinista: 1. fecha_inicio, 2. fecha_fin, 3. tarea
         client_entries.sort(key=lambda e: (e.fecha_inicio, e.fecha_fin, e.tarea))
         result[client] = client_entries
 
@@ -33,6 +38,7 @@ def group_by_client(entries: list[TimeEntry]) -> dict[str, list[TimeEntry]]:
 
 
 def calculate_client_summary(client_entries: list[TimeEntry]) -> dict:
+    """Calcula métricas resumen por cliente (horas totales, cantidad de registros y días trabajados)."""
     horas_totales = sum(e.horas for e in client_entries)
     registros = len(client_entries)
     dias_trabajados = len({e.fecha for e in client_entries})
@@ -44,6 +50,7 @@ def calculate_client_summary(client_entries: list[TimeEntry]) -> dict:
 
 
 def calculate_general_summary(grouped_entries: dict[str, list[TimeEntry]]) -> dict:
+    """Calcula el resumen general acumulado para todos los clientes."""
     total_horas = 0.0
     total_registros = 0
     clients_summary = {}

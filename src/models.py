@@ -4,6 +4,8 @@ from datetime import date, datetime, time, timedelta
 
 @dataclass
 class TimeEntry:
+    """Modela un registro individual de tiempo exportado desde Tracking Time."""
+
     servicio: str | None
     cliente: str
     proyecto: str
@@ -29,18 +31,22 @@ class TimeEntry:
 
     @property
     def fecha(self) -> date:
+        """Extrae la fecha de inicio como objeto date."""
         return self.fecha_inicio.date()
 
     @property
     def hora_inicio(self) -> time:
+        """Extrae la hora de inicio como objeto time."""
         return self.fecha_inicio.time()
 
     @property
     def hora_fin(self) -> time:
+        """Extrae la hora de fin como objeto time."""
         return self.fecha_fin.time()
 
     @property
     def duracion_timedelta(self) -> timedelta:
+        """Convierte la duración en formato string H:MM:SS a un objeto timedelta."""
         parts = self.duracion_str.split(":")
         if len(parts) == 3:
             h, m, s = map(int, parts)
