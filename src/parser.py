@@ -1,6 +1,7 @@
 import csv
 from pathlib import Path
 
+from src.exceptions import InvalidHeaderError
 from src.models import TimeEntry
 from src.validators import (
     parse_boolean,
@@ -22,7 +23,7 @@ def parse_csv_file(file_path: Path, override_usuario: str | None = None) -> list
     with open(file_path, "r", encoding="utf-8-sig", newline="") as f:
         reader = csv.DictReader(f, delimiter=";")
         if not reader.fieldnames:
-            raise validate_headers([])
+            raise InvalidHeaderError("El archivo CSV no contiene cabeceras.")
 
         # Validar que existan todas las cabeceras obligatorias requeridas
         validate_headers(list(reader.fieldnames))
