@@ -8,6 +8,9 @@ def filter_by_month(entries: list[TimeEntry], mes: int, anio: int) -> list[TimeE
     for entry in entries:
         d = entry.fecha
         if d.month == mes and d.year == anio:
+            # Omitir registros FERIADO con 0 horas
+            if entry.horas == 0.0 and "feriado" in entry.notas.lower():
+                continue
             filtered.append(entry)
     return filtered
 
