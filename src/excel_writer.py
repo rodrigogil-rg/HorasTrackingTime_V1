@@ -6,7 +6,7 @@ from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
 
 from src.models import TimeEntry
-from src.transformer import group_by_client
+from src.transformer import calculate_client_summary, group_by_client
 
 SPANISH_MONTHS = {
     1: "Enero",
@@ -172,12 +172,9 @@ def write_excel(
         cell_c.number_format = "#,##0"
         cell_c.border = thin_border
 
-        # D: Días trabajados
-        cell_d = ws_summary.cell(
-            row=current_row,
-            column=4,
-            value=f"=COUNTA(_xlfn.UNIQUE('{client}'!G4:G{last_client_row}))",
-        )
+        # D: Días trabajados calculado en Python (compatible con todas las versiones de Excel)
+        client_summary = calculate_client_summary(client_entries)
+        cell_d = ws_summary.cell(row=current_row, column=4, value=client_summary["dias_trabajados"])
         cell_d.font = font_data
         cell_d.fill = fill_row_alt
         cell_d.alignment = align_right
