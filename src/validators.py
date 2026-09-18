@@ -50,8 +50,8 @@ def parse_hours(val: str, row_idx: int) -> float:
     cleaned = val.strip().replace(",", ".")
     try:
         return float(cleaned)
-    except ValueError:
-        raise InvalidHoursError(f"Fila {row_idx}: valor inválido en 'Horas': '{val}'")
+    except ValueError as exc:
+        raise InvalidHoursError(f"Fila {row_idx}: valor inválido en 'Horas': '{val}'") from exc
 
 
 def parse_datetime(val: str, row_idx: int, field_name: str) -> datetime:
@@ -66,16 +66,16 @@ def parse_datetime(val: str, row_idx: int, field_name: str) -> datetime:
         try:
             dt = datetime.strptime(val_clean, "%Y-%m-%d %H:%M:%S")  # noqa: DTZ007
             return dt.replace(tzinfo=None)
-        except ValueError:
+        except ValueError as exc:
             raise InvalidDateError(
                 f"Fila {row_idx}: formato de fecha inválido en '{field_name}': '{val}'"
-            )
+            ) from exc
 
 
 def parse_duration(val: str, row_idx: int) -> str:
-    """Valida y retorna la cadena de duración en formato H:MM:SS."""
-    if not val:
-        raise InvalidDurationError(f"Fila {row_idx}: valor vacío en 'Duración'.")
+    """Valida y retorna la cadena de duración en formato H:MM:SS, o vacío si es feriado opcional."""
+    if not val or not val.strip():
+        return ""
     val_clean = val.strip()
     parts = val_clean.split(":")
     if len(parts) not in (2, 3):
@@ -83,14 +83,18 @@ def parse_duration(val: str, row_idx: int) -> str:
     try:
         for p in parts:
             int(p)
-    except ValueError:
-        raise InvalidDurationError(f"Fila {row_idx}: formato de duración inválido: '{val}'")
+    except ValueError as exc:
+        raise InvalidDurationError(
+            f"Fila {row_idx}: formato de duración inválido: '{val}'"
+        ) from exc
     return val_clean
 
 
-def validate_client(val: str, row_idx: int) -> str:
-    """Valida que el nombre del cliente no esté vacío."""
+def validate_client(val: str, row_idx: int, is_feriado: bool = False) -> str:
+    """Valida que el cliente no esté vacío, permitiendo omitirlo estrictamente si es un feriado."""
     if not val or not val.strip():
+        if is_feriado:
+            return "Feriado"
         raise EmptyClientError(f"Fila {row_idx}: el campo Cliente es obligatorio.")
     return val.strip()
 
