@@ -3,12 +3,12 @@ from pathlib import Path
 import pytest
 
 from src.exceptions import InputNotFoundError
-from src.main import find_csv_file, main
+from src.main import find_csv_files, main
 
 
-def test_find_csv_file_not_found(tmp_path):
+def test_find_csv_files_not_found(tmp_path):
     with pytest.raises(InputNotFoundError):
-        find_csv_file(tmp_path / "nonexistent")
+        find_csv_files(tmp_path / "nonexistent")
 
 
 def test_main_execution(tmp_path, monkeypatch, capsys):
@@ -47,8 +47,14 @@ def test_main_multiple_csv(tmp_path, monkeypatch):
     output_dir = tmp_path / "output"
     input_dir.mkdir()
 
-    (input_dir / "a.csv").write_text("a", encoding="utf-8")
-    (input_dir / "b.csv").write_text("b", encoding="utf-8")
+    # Copy sample csv twice to simulate multiple users/files
+    sample_csv = Path("Ejemplos/Planilla de tiempo, ago 1,2026 - ago 31,2026 - 80643.csv")
+    (input_dir / "user1.csv").write_text(
+        sample_csv.read_text(encoding="utf-8-sig"), encoding="utf-8"
+    )
+    (input_dir / "user2.csv").write_text(
+        sample_csv.read_text(encoding="utf-8-sig"), encoding="utf-8"
+    )
 
     monkeypatch.setattr(
         "sys.argv",
@@ -65,4 +71,4 @@ def test_main_multiple_csv(tmp_path, monkeypatch):
         ],
     )
     exit_code = main()
-    assert exit_code == 2
+    assert exit_code == 0

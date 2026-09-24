@@ -10,7 +10,6 @@ from src.validators import (
     parse_hours,
     validate_client,
     validate_headers,
-    validate_single_user,
 )
 
 
@@ -87,8 +86,5 @@ def parse_csv_file(file_path: Path, override_usuario: str | None = None) -> list
             )
             entries.append(entry)
 
-    # Validar que el archivo contenga registros de un único usuario
-    if not override_usuario:
-        validate_single_user(users_found)
-
+    # Nota: Se permiten múltiples usuarios en el reporte consolidado
     return entries

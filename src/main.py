@@ -6,7 +6,6 @@ from pathlib import Path
 from src.excel_writer import write_excel
 from src.exceptions import (
     InputNotFoundError,
-    MultipleInputFilesError,
     TrackingTimeError,
 )
 from src.parser import parse_csv_file
@@ -17,28 +16,24 @@ from src.validators import validate_month_year
 logger = logging.getLogger("trackingtime")
 
 
-def find_csv_file(input_dir: Path) -> Path:
-    """Busca y valida que exista exactamente un archivo CSV en el directorio de entrada."""
+def find_csv_files(input_dir: Path) -> list[Path]:
+    """Busca y valida que exista al menos un archivo CSV en el directorio de entrada."""
     if not input_dir.exists():
         raise InputNotFoundError(f"El directorio input no existe: {input_dir}")
 
     csv_files = list(input_dir.glob("*.csv"))
     if not csv_files:
-        raise InputNotFoundError(f"No se encontró archivo CSV en {input_dir}/")
-    if len(csv_files) > 1:
-        raise MultipleInputFilesError(
-            f"Múltiples archivos CSV encontrados en {input_dir}/. Deje solo uno."
-        )
-    return csv_files[0]
+        raise InputNotFoundError(f"No se encontró ningún archivo CSV en {input_dir}/")
+    return csv_files
 
 
 def main() -> int:
     """Punto de entrada principal de la CLI.
 
-    Orquesta la lectura, validación, transformación y generación del archivo Excel.
+    Orquesta la lectura de múltiples CSVs, validación, transformación y generación del archivo Excel consolidado.
     """
     parser = argparse.ArgumentParser(
-        description="Transforma CSV mensual de Tracking Time en Excel."
+        description="Transforma múltiples CSVs mensuales de Tracking Time en Excel consolidado."
     )
     parser.add_argument("--mes", type=int, required=True, help="Mes (1..12)")
     parser.add_argument("--anio", type=int, required=True, help="Año (>= 2000)")
@@ -61,28 +56,31 @@ def main() -> int:
         input_dir = Path(args.input)
         output_dir = Path(args.output)
 
-        # Buscar el archivo CSV de entrada
-        csv_path = find_csv_file(input_dir)
-        logger.info(f"Procesando archivo CSV: {csv_path}")
+        # Buscar todos los archivos CSV de entrada (soporta múltiples usuarios)
+        csv_files = find_csv_files(input_dir)
+        all_entries = []
 
-        # Parsear registros y filtrar por el mes y año solicitados
-        entries = parse_csv_file(csv_path, override_usuario=args.usuario)
-        filtered_entries = filter_by_month(entries, args.mes, args.anio)
+        for csv_path in csv_files:
+            logger.info(f"Procesando archivo CSV: {csv_path}")
+            entries = parse_csv_file(csv_path, override_usuario=args.usuario)
+            all_entries.extend(entries)
+
+        filtered_entries = filter_by_month(all_entries, args.mes, args.anio)
 
         if not filtered_entries:
             logger.warning(f"No se encontraron registros para el mes {args.mes}/{args.anio}.")
 
-        # Detectar el nombre de usuario de los registros si no fue provisto por parámetro
-        usuario = args.usuario
-        if not usuario and filtered_entries:
-            usuario = filtered_entries[0].usuario
-        elif not usuario and entries:
-            usuario = entries[0].usuario
-        elif not usuario:
-            usuario = "Usuario"
+        # Determinar el nombre para el reporte (Consolidado si hay varios usuarios, o el nombre del usuario si es único)
+        users_in_data = sorted({e.usuario for e in filtered_entries if e.usuario})
+        if len(users_in_data) == 1:
+            report_name = users_in_data[0]
+        elif args.usuario:
+            report_name = args.usuario
+        else:
+            report_name = "Consolidado"
 
         # Generar el archivo Excel resultante
-        output_path = write_excel(filtered_entries, args.mes, args.anio, usuario, output_dir)
+        output_path = write_excel(filtered_entries, args.mes, args.anio, report_name, output_dir)
         logger.info(f"Planilla generada con éxito: {output_path}")
         return 0
 
