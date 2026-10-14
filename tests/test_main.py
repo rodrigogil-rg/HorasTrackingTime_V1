@@ -72,3 +72,42 @@ def test_main_multiple_csv(tmp_path, monkeypatch):
     )
     exit_code = main()
     assert exit_code == 0
+
+
+def test_main_multiple_csv_different_months(tmp_path, monkeypatch):
+    input_dir = tmp_path / "input"
+    output_dir = tmp_path / "output"
+    input_dir.mkdir()
+
+    # Create a CSV with July data and another with August data
+    csv_july = (
+        "Cliente;Usuario;Fecha de inicio;Fecha de fin;Duración;Horas;Proyecto;Tarea;Facturable;Facturado;Archivado;Zona horaria;Moneda;Notas\n"
+        "Cirion;Usuario Julio;15/07/2026 10:00:00;15/07/2026 12:00:00;2:00:00;2;Cirion;Tarea Julio;true;false;false;GMT-03:00;USD;-\n"
+    )
+    csv_august = (
+        "Cliente;Usuario;Fecha de inicio;Fecha de fin;Duración;Horas;Proyecto;Tarea;Facturable;Facturado;Archivado;Zona horaria;Moneda;Notas\n"
+        "Cirion;Usuario Agosto;15/08/2026 10:00:00;15/08/2026 12:00:00;2:00:00;2;Cirion;Tarea Agosto;true;false;false;GMT-03:00;USD;-\n"
+    )
+
+    (input_dir / "july.csv").write_text(csv_july, encoding="utf-8-sig")
+    (input_dir / "august.csv").write_text(csv_august, encoding="utf-8-sig")
+
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "main.py",
+            "--mes",
+            "8",
+            "--anio",
+            "2026",
+            "--input",
+            str(input_dir),
+            "--output",
+            str(output_dir),
+        ],
+    )
+    exit_code = main()
+    assert exit_code == 0
+
+    expected_output = output_dir / "Planilla_Horas_Usuario_Agosto_Agosto_2026.xlsx"
+    assert expected_output.exists()

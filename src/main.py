@@ -30,7 +30,8 @@ def find_csv_files(input_dir: Path) -> list[Path]:
 def main() -> int:
     """Punto de entrada principal de la CLI.
 
-    Orquesta la lectura de múltiples CSVs, validación, transformación y generación del archivo Excel consolidado.
+    Orquesta la lectura de múltiples CSVs (con posibles distintos meses),
+    validación, filtrado y generación del archivo Excel consolidado.
     """
     parser = argparse.ArgumentParser(
         description="Transforma múltiples CSVs mensuales de Tracking Time en Excel consolidado."
@@ -56,7 +57,7 @@ def main() -> int:
         input_dir = Path(args.input)
         output_dir = Path(args.output)
 
-        # Buscar todos los archivos CSV de entrada (soporta múltiples usuarios)
+        # Buscar todos los archivos CSV de entrada (pueden contener distintos meses y usuarios)
         csv_files = find_csv_files(input_dir)
         all_entries = []
 
@@ -65,10 +66,13 @@ def main() -> int:
             entries = parse_csv_file(csv_path, override_usuario=args.usuario)
             all_entries.extend(entries)
 
+        # Filtrar con precisión los registros correspondientes al mes y año solicitados
         filtered_entries = filter_by_month(all_entries, args.mes, args.anio)
 
         if not filtered_entries:
-            logger.warning(f"No se encontraron registros para el mes {args.mes}/{args.anio}.")
+            logger.warning(
+                f"No se encontraron registros para el mes {args.mes}/{args.anio} entre los archivos proporcionados."
+            )
 
         # Determinar el nombre para el reporte (Consolidado si hay varios usuarios, o el nombre del usuario si es único)
         users_in_data = sorted({e.usuario for e in filtered_entries if e.usuario})
