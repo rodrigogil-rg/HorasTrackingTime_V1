@@ -38,7 +38,7 @@ def test_main_execution(tmp_path, monkeypatch, capsys):
     exit_code = main()
     assert exit_code == 0
 
-    expected_output = output_dir / "Planilla_Horas_Rodrigo_Gil_2026_Agosto.xlsx"
+    expected_output = output_dir / "Planilla_Horas_Rodrigo_Gil_2026_08.xlsx"
     assert expected_output.exists()
 
 
@@ -109,7 +109,7 @@ def test_main_multiple_csv_different_months(tmp_path, monkeypatch):
     exit_code = main()
     assert exit_code == 0
 
-    expected_output = output_dir / "Planilla_Horas_Usuario_Agosto_2026_Agosto.xlsx"
+    expected_output = output_dir / "Planilla_Horas_Usuario_Agosto_2026_08.xlsx"
     assert expected_output.exists()
 
 
@@ -143,5 +143,5 @@ def test_main_batch_todos(tmp_path, monkeypatch):
     exit_code = main()
     assert exit_code == 0
 
-    assert (output_dir / "Planilla_Horas_Priscila_Scharf_2025_Enero.xlsx").exists()
-    assert (output_dir / "Planilla_Horas_Rodrigo_Gil_2026_Agosto.xlsx").exists()
+    assert (output_dir / "Planilla_Horas_Priscila_Scharf_2025_01.xlsx").exists()
+    assert (output_dir / "Planilla_Horas_Rodrigo_Gil_2026_08.xlsx").exists()
