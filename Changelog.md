@@ -6,6 +6,15 @@ El formato está basado en Keep a Changelog, y este proyecto adhiere al versiona
 
 ---
 
+## [1.5.0] - 2026-09-24
+
+### Agregado
+- Documentación completa en `TrackingTime_Excel_Specificacion_Desarrollo_v1.1.md` de todas las funcionalidades implementadas: modo batch (`--todos`), modo de salida configurable (`--modo-salida`), modo interactivo (`--interactivo`), nomenclatura con mes numérico de 2 dígitos y comportamiento `Consolidado` para múltiples usuarios.
+- Todos los archivos de documentación sincronizados: `README.md`, `AGENTS.md`, `memory.md`, `Changelog.md`.
+- Tests con docstrings descriptivos en todos los archivos de `tests/`.
+
+---
+
 ## [1.4.0] - 2026-09-24
 
 ### Agregado

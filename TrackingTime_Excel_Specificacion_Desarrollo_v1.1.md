@@ -342,29 +342,44 @@ Si horas generales = 0, porcentaje = 0.
 ## 15. Nombre de salida
 
 ```text
-Planilla_Horas_{usuario}_{mes_nombre}_{anio}.xlsx
+Planilla_Horas_{usuario}_{anio}_{mes_num}.xlsx
 ```
 
 Ejemplo:
-`Planilla_Horas_Rodrigo_Gil_Agosto_2026.xlsx`
+`Planilla_Horas_Rodrigo_Gil_2026_08.xlsx`
 
-Reemplazar espacios por `_` y sanitizar caracteres inválidos.
+- `{usuario}`: nombre del usuario detectado o forzado con `--usuario`, con espacios reemplazados por `_` y caracteres inválidos sanitizados.
+- `{anio}`: año de 4 dígitos (ej. 2026).
+- `{mes_num}`: mes en formato numérico de 2 dígitos con cero a la izquierda (ej. 08 para agosto), para garantizar ordenamiento alfabético y cronológico correcto en sistemas de archivos.
+
+Cuando hay múltiples usuarios en el mismo mes/año y no se especifica `--usuario`, se genera un archivo consolidado:
+`Planilla_Horas_Consolidado_{anio}_{mes_num}.xlsx`
 
 ## 16. CLI
 
 ```text
 python -m src.main --mes 8 --anio 2026
+python -m src.main --todos
+python -m src.main --interactivo
 ```
 
 Parámetros:
 ```text
---mes       requerido, 1..12
---anio      requerido, >= 2000
---input     default ./input
---output    default ./output
---usuario   opcional
---verbose   opcional
+--mes         opcional, 1..12 (requerido si no se usa --todos ni --interactivo)
+--anio        opcional, >= 2000 (requerido si no se usa --todos ni --interactivo)
+--input       default ./input
+--output      default ./output
+--usuario     opcional, sobrescribe o fuerza el nombre de usuario
+--modo-salida consolidado|por_usuario, default consolidado.
+               Cuando hay múltiples usuarios en el mismo mes/año:
+               - consolidado: genera un único archivo Planilla_Horas_Consolidado_{anio}_{mes_num}.xlsx
+               - por_usuario: genera un archivo independiente por cada usuario detectado
+--todos       procesa automáticamente todas las planillas por cada año/mes y usuario encontrados en input/
+--interactivo solicita parámetros por consola con valores por defecto
+--verbose     opcional, muestra trazas de error detalladas
 ```
+
+Si se usa `--interactivo`, el programa solicita por consola cada parámetro (directorio entrada/salida, tipo de ejecución, mes/año, usuario, modo de salida y verbosidad) ofreciendo valores por defecto.
 
 ## 17. Detección de CSV
 
@@ -373,13 +388,10 @@ Buscar `.csv` en `input`.
 Cero:
 `No se encontró archivo CSV en input/`
 
-Uno:
-procesar.
+Uno o más:
+procesar todos los archivos encontrados. Cada archivo puede pertenecer a distintos usuarios y meses/años; el sistema los consolida en memoria y filtra según el mes/año solicitado o genera todas las combinaciones posibles con `--todos`.
 
-Más de uno:
-`Múltiples archivos CSV encontrados. Deje solo uno.`
-
-Nunca elegir arbitrariamente.
+Nunca elegir arbitrariamente un solo archivo cuando hay varios.
 
 ## 18. Sin datos
 
@@ -389,7 +401,30 @@ Si no hay registros del mes:
 - resumen sin registros;
 - no crear hojas de cliente vacías.
 
-## 19. Errores
+## 19. Modo de salida: Consolidado vs. Por Usuario
+
+Cuando se detectan múltiples usuarios distintos en los datos de entrada para un mismo mes/año, el comportamiento depende del parámetro `--modo-salida`:
+
+- `consolidado` (por defecto): se genera un único archivo llamado `Planilla_Horas_Consolidado_{anio}_{mes_num}.xlsx` que agrupa a todos los usuarios.
+- `por_usuario`: se genera un archivo independiente por cada usuario detectado, con el formato `Planilla_Horas_{usuario}_{anio}_{mes_num}.xlsx`.
+
+Este comportamiento aplica tanto en el modo específico (`--mes` y `--anio`) como en el modo batch (`--todos`).
+
+## 20. Modo Interactivo
+
+El parámetro `--interactivo` solicita todos los parámetros de ejecución por consola con valores por defecto, guiando al usuario paso a paso:
+
+1. Directorio de entrada (default `./input`)
+2. Directorio de salida (default `./output`)
+3. Tipo de ejecución: específico (`--mes`/`--anio`) o batch masivo (`--todos`)
+4. Mes y año (si se elige ejecución específica)
+5. Usuario override (opcional, Enter para detectar automáticamente)
+6. Modo de salida cuando hay múltiples usuarios (`consolidado` o `por_usuario`, default `consolidado`)
+7. Verbosidad (`--verbose`)
+
+Una vez capturados los valores, el programa ejecuta la misma lógica determinista que la CLI tradicional.
+
+## 21. Errores
 
 Códigos mínimos:
 ```text
@@ -540,6 +575,12 @@ No agregar `python-dateutil` salvo necesidad demostrable.
 - sanitización
 - colisiones
 
+### Modo batch y modo interactivo
+- `--todos` genera planillas para cada combinación de año/mes/usuario encontrados en input/
+- `--modo-salida consolidado` genera un archivo `Consolidado` cuando hay múltiples usuarios
+- `--modo-salida por_usuario` genera un archivo independiente por cada usuario detectado
+- `--interactivo` solicita parámetros por consola con valores por defecto y genera el Excel correctamente
+
 ### Integración
 CSV → parser → transformer → Excel → reabrir XLSX con `openpyxl`.
 
@@ -572,7 +613,7 @@ Si un detalle del archivo de referencia contradice esta especificación, esta es
 
 ```text
 Planilla de tiempo, ago 1,2026 - ago 31,2026 - 80643.csv
-Planilla_Horas_Rodrigo_Gil_Agosto_2026.xlsx
+Planilla_Horas_Rodrigo_Gil_2026_08.xlsx
 ```
 
 La IA desarrolladora debe inspeccionarlos antes de finalizar.
@@ -640,7 +681,8 @@ Entrada:
   "mes": 8,
   "anio": 2026,
   "input_dir": "./input",
-  "output_dir": "./output"
+  "output_dir": "./output",
+  "modo_salida": "consolidado"
 }
 ```
 
@@ -648,7 +690,7 @@ Entrada:
 ```json
 {
   "success": true,
-  "output_file": "output/Planilla_Horas_Rodrigo_Gil_Agosto_2026.xlsx",
+  "output_file": "output/Planilla_Horas_Rodrigo_Gil_2026_08.xlsx",
   "usuario": "Rodrigo Gil",
   "mes": 8,
   "anio": 2026,
