@@ -7,11 +7,13 @@ from src.main import find_csv_files, main
 
 
 def test_find_csv_files_not_found(tmp_path):
+    """Prueba que find_csv_files lanza InputNotFoundError cuando el directorio de entrada no existe."""
     with pytest.raises(InputNotFoundError):
         find_csv_files(tmp_path / "nonexistent")
 
 
 def test_main_execution(tmp_path, monkeypatch, capsys):
+    """Prueba la ejecución estándar del CLI con --mes y --anio, verificando que se genere el archivo Excel esperado."""
     input_dir = tmp_path / "input"
     output_dir = tmp_path / "output"
     input_dir.mkdir()
@@ -43,6 +45,7 @@ def test_main_execution(tmp_path, monkeypatch, capsys):
 
 
 def test_main_multiple_csv(tmp_path, monkeypatch):
+    """Prueba que el CLI procese múltiples archivos CSV en input/ para el mismo mes/año sin error (modo consolidado)."""
     input_dir = tmp_path / "input"
     output_dir = tmp_path / "output"
     input_dir.mkdir()
@@ -75,6 +78,7 @@ def test_main_multiple_csv(tmp_path, monkeypatch):
 
 
 def test_main_multiple_csv_different_months(tmp_path, monkeypatch):
+    """Prueba el filtrado por mes específico cuando hay archivos CSV con registros de distintos meses."""
     input_dir = tmp_path / "input"
     output_dir = tmp_path / "output"
     input_dir.mkdir()
@@ -114,6 +118,7 @@ def test_main_multiple_csv_different_months(tmp_path, monkeypatch):
 
 
 def test_main_batch_todos(tmp_path, monkeypatch):
+    """Prueba el modo batch (--todos) que genera planillas independientes por cada combinación de año/mes y usuario."""
     input_dir = tmp_path / "input"
     output_dir = tmp_path / "output"
     input_dir.mkdir()
@@ -148,6 +153,7 @@ def test_main_batch_todos(tmp_path, monkeypatch):
 
 
 def test_main_batch_todos_por_usuario(tmp_path, monkeypatch):
+    """Prueba el modo batch (--todos) con --modo-salida por_usuario, generando un archivo Excel por cada usuario detectado."""
     input_dir = tmp_path / "input"
     output_dir = tmp_path / "output"
     input_dir.mkdir()
@@ -184,6 +190,7 @@ def test_main_batch_todos_por_usuario(tmp_path, monkeypatch):
 
 
 def test_main_mes_anio_por_usuario(tmp_path, monkeypatch):
+    """Prueba el modo específico (--mes/--anio) con --modo-salida por_usuario cuando hay múltiples usuarios en el mismo mes."""
     input_dir = tmp_path / "input"
     output_dir = tmp_path / "output"
     input_dir.mkdir()
@@ -219,6 +226,7 @@ def test_main_mes_anio_por_usuario(tmp_path, monkeypatch):
 
 
 def test_main_interactivo_mocked(tmp_path, monkeypatch):
+    """Prueba el modo interactivo (--interactivo) simulando respuestas de input() para generar una planilla específica."""
     input_dir = tmp_path / "input"
     output_dir = tmp_path / "output"
     input_dir.mkdir()

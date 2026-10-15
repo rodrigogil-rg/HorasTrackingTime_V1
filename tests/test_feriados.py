@@ -5,6 +5,7 @@ from src.transformer import filter_by_month
 
 
 def test_filter_omits_feriados():
+    """Prueba que filter_by_month omita registros marcados como FERIADO con 0 horas en las notas."""
     entry1 = TimeEntry(
         servicio=None,
         cliente="Cirion",

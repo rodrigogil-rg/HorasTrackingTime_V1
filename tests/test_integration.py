@@ -8,6 +8,7 @@ from src.transformer import filter_by_month, group_by_client
 
 
 def test_parser_and_validators():
+    """Prueba el parseo completo del CSV de referencia: 23 registros, cliente Cirion, horas 1.0 y duración 1 hora (3600 segundos)."""
     csv_path = Path("Ejemplos/Planilla de tiempo, ago 1,2026 - ago 31,2026 - 80643.csv")
     entries = parse_csv_file(csv_path)
     assert len(entries) == 23
@@ -17,6 +18,7 @@ def test_parser_and_validators():
 
 
 def test_transformer_monthly_filter():
+    """Prueba el filtrado mensual: todos los 23 registros pertenecen a agosto 2026, y ninguno a julio 2026."""
     csv_path = Path("Ejemplos/Planilla de tiempo, ago 1,2026 - ago 31,2026 - 80643.csv")
     entries = parse_csv_file(csv_path)
     filtered = filter_by_month(entries, 8, 2026)
@@ -27,6 +29,7 @@ def test_transformer_monthly_filter():
 
 
 def test_grouping_and_sorting():
+    """Prueba la agrupación por cliente (Cirion con 22 registros, Mirgor con 1) y el ordenamiento determinista."""
     csv_path = Path("Ejemplos/Planilla de tiempo, ago 1,2026 - ago 31,2026 - 80643.csv")
     entries = parse_csv_file(csv_path)
     filtered = filter_by_month(entries, 8, 2026)
@@ -38,6 +41,7 @@ def test_grouping_and_sorting():
 
 
 def test_excel_writer_generation(tmp_path):
+    """Prueba la generación end-to-end del Excel: verifica que existan las hojas Resumen general, Cirion y Mirgor."""
     csv_path = Path("Ejemplos/Planilla de tiempo, ago 1,2026 - ago 31,2026 - 80643.csv")
     entries = parse_csv_file(csv_path)
     filtered = filter_by_month(entries, 8, 2026)
