@@ -397,7 +397,7 @@ def write_excel(
         wb.remove(default_sheet)
 
     output_dir.mkdir(parents=True, exist_ok=True)
-    filename = f"Planilla_Horas_{sanitize_filename(usuario)}_{mes_nombre}_{anio}.xlsx"
+    filename = f"Planilla_Horas_{sanitize_filename(usuario)}_{anio}_{mes_nombre}.xlsx"
     output_path = output_dir / filename
 
     wb.save(output_path)

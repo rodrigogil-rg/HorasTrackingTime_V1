@@ -38,7 +38,7 @@ def test_main_execution(tmp_path, monkeypatch, capsys):
     exit_code = main()
     assert exit_code == 0
 
-    expected_output = output_dir / "Planilla_Horas_Rodrigo_Gil_Agosto_2026.xlsx"
+    expected_output = output_dir / "Planilla_Horas_Rodrigo_Gil_2026_Agosto.xlsx"
     assert expected_output.exists()
 
 
@@ -109,5 +109,39 @@ def test_main_multiple_csv_different_months(tmp_path, monkeypatch):
     exit_code = main()
     assert exit_code == 0
 
-    expected_output = output_dir / "Planilla_Horas_Usuario_Agosto_Agosto_2026.xlsx"
+    expected_output = output_dir / "Planilla_Horas_Usuario_Agosto_2026_Agosto.xlsx"
     assert expected_output.exists()
+
+
+def test_main_batch_todos(tmp_path, monkeypatch):
+    input_dir = tmp_path / "input"
+    output_dir = tmp_path / "output"
+    input_dir.mkdir()
+
+    csv_data = (
+        "Cliente;Usuario;Fecha de inicio;Fecha de fin;Duración;Horas;Proyecto;Tarea;Facturable;Facturado;Archivado;Zona horaria;Moneda;Notas\n"
+        "Cirion;Priscila Scharf;14/01/2025 10:00:00;14/01/2025 11:00:00;1:00:00;1;Electra;Admin;false;false;false;GMT-03:00;USD;-\n"
+    )
+    (input_dir / "enero_2025.csv").write_text(csv_data, encoding="utf-8-sig")
+
+    sample_csv = Path("Ejemplos/Planilla de tiempo, ago 1,2026 - ago 31,2026 - 80643.csv")
+    (input_dir / "agosto_2026.csv").write_text(
+        sample_csv.read_text(encoding="utf-8-sig"), encoding="utf-8"
+    )
+
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "main.py",
+            "--todos",
+            "--input",
+            str(input_dir),
+            "--output",
+            str(output_dir),
+        ],
+    )
+    exit_code = main()
+    assert exit_code == 0
+
+    assert (output_dir / "Planilla_Horas_Priscila_Scharf_2025_Enero.xlsx").exists()
+    assert (output_dir / "Planilla_Horas_Rodrigo_Gil_2026_Agosto.xlsx").exists()
