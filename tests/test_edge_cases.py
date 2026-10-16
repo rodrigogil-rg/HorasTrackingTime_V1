@@ -40,8 +40,8 @@ def test_parse_csv_english_headers_with_ampm(tmp_path):
     assert entries[0].horas == 4.0
     # Verificar que la fecha se parseó correctamente (9:00 AM = 09:00)
     assert entries[0].fecha_inicio.hour == 9
-    assert entries[0].fecha_inicio.day == 7
-    assert entries[0].fecha_inicio.month == 1
+    assert entries[0].fecha_inicio.day == 1
+    assert entries[0].fecha_inicio.month == 7
     assert entries[0].fecha_inicio.year == 2026
 
 

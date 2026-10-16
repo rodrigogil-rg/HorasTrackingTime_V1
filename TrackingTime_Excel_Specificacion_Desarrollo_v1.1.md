@@ -35,7 +35,8 @@ Formato:
 - Separador `;`.
 - Campos potencialmente entrecomillados.
 - Decimal con coma (`1,5`).
-- Fecha/hora `DD/MM/YYYY HH:MM:SS`.
+- Fecha/hora `DD/MM/YYYY HH:MM:SS` o `MM/DD/YYYY HH:MM:SS` (con o sin `AM/PM`).
+  - El sistema detecta automáticamente el formato basado en el valor de la fecha y el idioma de los encabezados.
 - Duración `H:MM:SS`.
 - Zona habitual `GMT-03:00`.
 
@@ -66,6 +67,10 @@ Columnas del CSV de referencia:
 | 20 | Costo |
 | 21 | Moneda |
 
+### Encabezados en inglés
+
+El sistema acepta archivos CSV con encabezados en inglés y los traduce automáticamente al español para su procesamiento interno. Los encabezados en inglés son mapeados a sus equivalentes en español (por ejemplo: `Client` → `Cliente`, `User` → `Usuario`, `Start date` → `Fecha de inicio`, `End date` → `Fecha de fin`, `Duration` → `Duración`, `Hours` → `Horas`).
+
 ### Contrato de headers
 
 No depender exclusivamente de índices. Leer encabezados, normalizarlos, construir `nombre -> índice` y validar columnas requeridas:
@@ -91,9 +96,18 @@ Si falta una columna, finalizar con error controlado.
 
 ### Horas
 Convertir `1,5` → `1.5` mediante reemplazo de coma por punto y `float`.
-
 ### Fecha/hora
-Parsear `%d/%m/%Y %H:%M:%S` a `datetime`. No convertir a UTC.
+
+Parsear `%d/%m/%Y %H:%M:%S` o `%m/%d/%Y %H:%M:%S` a `datetime`. No convertir a UTC.
+
+El sistema detecta automáticamente el formato de fecha basado en el valor de la fecha y el idioma de los encabezados del CSV:
+- Si el primer segmento numérico > 12, se asume `dd/mm/yyyy` (día/mes/año).
+- Si el segundo segmento numérico > 12, se asume `mm/dd/yyyy` (mes/día/año).
+- Si ambos segmentos ≤ 12 (formato ambiguo):
+  - Encabezados en inglés → `mm/dd/yyyy`.
+  - Encabezados en español → `dd/mm/yyyy`.
+
+Soporta formato 24-hour (`HH:MM:SS`) y 12-hour con `AM/PM` (`hh:MM:SS AM/PM`).
 
 ### Duración
 Convertir `H:MM:SS` a `timedelta`. Debe soportar más de 24 horas.

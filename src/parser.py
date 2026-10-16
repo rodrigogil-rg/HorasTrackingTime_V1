@@ -28,6 +28,30 @@ def parse_csv_file(file_path: Path, override_usuario: str | None = None) -> list
         # Normalizar encabezados (traducir del inglés al español si es necesario)
         normalized_headers = normalize_headers(list(reader.fieldnames))
 
+        # Detectar si el CSV está en inglés (buscar encabezados que son únicos del inglés,
+        # no encabezados que aparecen en ambos idiomas como "Total")
+        ENGLISH_ONLY_HEADERS = {
+            "Service",
+            "Client",
+            "Project",
+            "User",
+            "Task list",
+            "Billable",
+            "Billed",
+            "Hourly rate",
+            "Hourly cost",
+            "Currency",
+            "Archived",
+            "Start date",
+            "End date",
+            "Timezone",
+            "Duration",
+            "Hours",
+            "Notes",
+        }
+
+        is_english = any(h.strip() in ENGLISH_ONLY_HEADERS for h in reader.fieldnames)
+
         # Validar que existan todas las cabeceras obligatorias requeridas (después de normalizar)
         validate_headers(normalized_headers)
 
@@ -60,9 +84,11 @@ def parse_csv_file(file_path: Path, override_usuario: str | None = None) -> list
                 users_found.add(usuario)
 
             fecha_inicio = parse_datetime(
-                row_es.get("Fecha de inicio") or "", idx, "Fecha de inicio"
+                row_es.get("Fecha de inicio") or "", idx, "Fecha de inicio", is_english
             )
-            fecha_fin = parse_datetime(row_es.get("Fecha de fin") or "", idx, "Fecha de fin")
+            fecha_fin = parse_datetime(
+                row_es.get("Fecha de fin") or "", idx, "Fecha de fin", is_english
+            )
 
             duracion_val = row_es.get("Duración") or ""
             if is_feriado and not duracion_val.strip():
