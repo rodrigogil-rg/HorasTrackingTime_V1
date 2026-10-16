@@ -6,7 +6,7 @@ El formato está basado en Keep a Changelog, y este proyecto adhiere al versiona
 
 ---
 
-## [1.5.0] - 2026-09-24
+## [1.5.0] - 15/10/2026
 
 ### Agregado
 - Documentación completa en `TrackingTime_Excel_Specificacion_Desarrollo_v1.1.md` de todas las funcionalidades implementadas: modo batch (`--todos`), modo de salida configurable (`--modo-salida`), modo interactivo (`--interactivo`), nomenclatura con mes numérico de 2 dígitos y comportamiento `Consolidado` para múltiples usuarios.
@@ -15,7 +15,7 @@ El formato está basado en Keep a Changelog, y este proyecto adhiere al versiona
 
 ---
 
-## [1.4.0] - 2026-09-24
+## [1.4.0] - 15/10/2026
 
 ### Agregado
 - **Modo de salida configurable (--modo-salida)**: Permite elegir entre generar un único archivo `Consolidado` cuando hay varios usuarios (`consolidado`, por defecto) o generar un archivo Excel independiente por cada usuario detectado (`por_usuario`).
@@ -24,7 +24,7 @@ El formato está basado en Keep a Changelog, y este proyecto adhiere al versiona
 
 ---
 
-## [1.3.0] - 2026-09-24
+## [1.3.0] - 15/10/2026
 
 ### Agregado
 - **Modo Batch Masivo (--todos)**: Permite procesar de forma completamente automática todos los archivos CSV en el directorio input/ desde enero hasta la actualidad, agrupando y generando planillas Excel independientes por cada combinación de Usuario, Año y Mes.
@@ -33,7 +33,7 @@ El formato está basado en Keep a Changelog, y este proyecto adhiere al versiona
 
 ---
 
-## [1.2.0] - 2026-09-24
+## [1.2.0] - 24/09/2026
 
 ### Agregado
 - Soporte para **múltiples archivos CSV de entrada** en el directorio `input/`, permitiendo consolidar reportes provenientes de diversos usuarios en una única ejecución.
@@ -42,7 +42,7 @@ El formato está basado en Keep a Changelog, y este proyecto adhiere al versiona
 
 ---
 
-## [1.1.0] - 2026-09-24
+## [1.1.0] - 18/09/2026
 
 ### Agregado
 - Soporte para la omisión automática de **días feriados** (registros marcados con `FERIADO` en las notas y con `0` horas, permitiendo clientes o duraciones vacías/opcionales).
@@ -53,7 +53,7 @@ El formato está basado en Keep a Changelog, y este proyecto adhiere al versiona
 
 ---
 
-## [1.0.0] - 2026-09-24
+## [1.0.0] - 10/09/2026
 
 ### Agregado
 - Versión inicial completa basada en la Especificación Técnica v1.1.
