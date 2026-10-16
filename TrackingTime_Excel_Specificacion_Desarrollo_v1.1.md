@@ -447,7 +447,7 @@ Ejemplo:
 
 Sin stack trace en modo normal; disponible con `--verbose`.
 
-## 20. Logging y exit codes
+## 22. Logging y exit codes
 
 Usar `logging` con INFO/WARNING/ERROR/DEBUG.
 
@@ -458,7 +458,7 @@ Exit codes:
 2 = error de argumentos/configuración
 ```
 
-## 21. Arquitectura
+## 23. Arquitectura
 
 ```text
 project/
@@ -499,7 +499,7 @@ Responsabilidades:
 - `utils.py`: meses, nombres y utilidades.
 - `models.py`: dataclasses.
 
-## 22. Dependencias
+## 24. Dependencias
 
 ```toml
 [project]
@@ -524,7 +524,7 @@ target-version = "py310"
 
 No agregar `python-dateutil` salvo necesidad demostrable.
 
-## 23. Tests obligatorios
+## 25. Tests obligatorios
 
 ### Parser
 - cantidad de registros
@@ -584,7 +584,7 @@ No agregar `python-dateutil` salvo necesidad demostrable.
 ### Integración
 CSV → parser → transformer → Excel → reabrir XLSX con `openpyxl`.
 
-## 24. Golden Master
+## 26. Golden Master
 
 Utilizar la planilla Excel real como Golden Master funcional/visual.
 
@@ -609,7 +609,7 @@ Comparar:
 
 Si un detalle del archivo de referencia contradice esta especificación, esta especificación tiene prioridad.
 
-## 25. Archivos reales de referencia
+## 27. Archivos reales de referencia
 
 ```text
 Planilla de tiempo, ago 1,2026 - ago 31,2026 - 80643.csv
@@ -620,11 +620,11 @@ La IA desarrolladora debe inspeccionarlos antes de finalizar.
 
 Debe documentar discrepancias entre CSV, Excel y esta especificación.
 
-## 26. Performance
+## 28. Performance
 
 Soportar al menos 10.000 registros sin duplicaciones innecesarias de estructuras.
 
-## 27. README
+## 29. README
 
 Debe explicar:
 1. objetivo
@@ -640,7 +640,7 @@ Debe explicar:
 11. mantenimiento
 12. limitaciones V1
 
-## 28. Definition of Done
+## 30. Definition of Done
 
 - [ ] CSV real leído correctamente.
 - [ ] Headers validados.
@@ -670,7 +670,7 @@ Debe explicar:
 - [ ] README completo.
 - [ ] Golden Master validado.
 
-## 29. Interfaz futura IA / Skill
+## 31. Interfaz futura IA / Skill
 
 Nombre lógico:
 `GENERAR_PLANILLA_HORAS`
@@ -711,7 +711,7 @@ Error:
 
 La IA interpreta la intención y Python ejecuta la lógica determinística.
 
-## 30. Flujo futuro
+## 32. Flujo futuro
 
 ```text
 Usuario
@@ -729,7 +729,7 @@ CSV → Parser → Validación → Transformación → Excel
 Resultado
 ```
 
-## 31. Instrucción final para la IA desarrolladora
+## 33. Instrucción final para la IA desarrolladora
 
 Implementa el proyecto completo siguiendo esta especificación.
 
