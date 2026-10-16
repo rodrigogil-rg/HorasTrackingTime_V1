@@ -4,6 +4,7 @@ from pathlib import Path
 from src.exceptions import InvalidHeaderError
 from src.models import TimeEntry
 from src.validators import (
+    normalize_headers,
     parse_boolean,
     parse_datetime,
     parse_duration,
@@ -24,30 +25,46 @@ def parse_csv_file(file_path: Path, override_usuario: str | None = None) -> list
         if not reader.fieldnames:
             raise InvalidHeaderError("El archivo CSV no contiene cabeceras.")
 
-        # Validar que existan todas las cabeceras obligatorias requeridas
-        validate_headers(list(reader.fieldnames))
+        # Normalizar encabezados (traducir del inglés al español si es necesario)
+        normalized_headers = normalize_headers(list(reader.fieldnames))
+
+        # Validar que existan todas las cabeceras obligatorias requeridas (después de normalizar)
+        validate_headers(normalized_headers)
+
+        # Construir mapeo de nombre original -> nombre normalizado para traducir filas
+        header_mapping = {}
+        for orig, norm in zip(reader.fieldnames, normalized_headers):
+            header_mapping[orig] = norm
 
         for idx, row in enumerate(reader, start=2):
-            notas_val = row.get("Notas", "")
-            horas_val = row.get("Horas", "")
+            # Traducir la fila usando el mapeo de encabezados para acceder por nombre en español
+            row_es = {}
+            for orig_key, val in row.items():
+                norm_key = header_mapping.get(orig_key, orig_key)
+                row_es[norm_key] = val
+
+            notas_val = row_es.get("Notas", "")
+            horas_val = row_es.get("Horas", "")
 
             # Detectar si es un registro de feriado (notas contiene FERIADO u horas son 0 y sin cliente)
             is_feriado = "feriado" in notas_val.lower() or (
-                not row.get("Cliente") and not horas_val.strip()
+                not row_es.get("Cliente") and not horas_val.strip()
             )
 
-            cliente = validate_client(row.get("Cliente") or "", idx, is_feriado=is_feriado)
-            usuario_raw = row.get("Usuario")
+            cliente = validate_client(row_es.get("Cliente") or "", idx, is_feriado=is_feriado)
+            usuario_raw = row_es.get("Usuario")
             usuario = usuario_raw.strip() if usuario_raw else ""
             if not usuario and override_usuario:
                 usuario = override_usuario
             if usuario:
                 users_found.add(usuario)
 
-            fecha_inicio = parse_datetime(row.get("Fecha de inicio") or "", idx, "Fecha de inicio")
-            fecha_fin = parse_datetime(row.get("Fecha de fin") or "", idx, "Fecha de fin")
+            fecha_inicio = parse_datetime(
+                row_es.get("Fecha de inicio") or "", idx, "Fecha de inicio"
+            )
+            fecha_fin = parse_datetime(row_es.get("Fecha de fin") or "", idx, "Fecha de fin")
 
-            duracion_val = row.get("Duración") or ""
+            duracion_val = row_es.get("Duración") or ""
             if is_feriado and not duracion_val.strip():
                 duracion_str = "0:00:00"
             else:
@@ -61,28 +78,28 @@ def parse_csv_file(file_path: Path, override_usuario: str | None = None) -> list
 
             # Construir entidad de dominio con cada fila del CSV
             entry = TimeEntry(
-                servicio=row.get("Servicio") or None,
+                servicio=row_es.get("Servicio") or None,
                 cliente=cliente,
-                proyecto=row.get("Proyecto", "").strip(),
+                proyecto=row_es.get("Proyecto", "").strip(),
                 usuario=usuario,
-                lista_tareas=row.get("Lista de tareas") or None,
-                tarea=row.get("Tarea", "").strip() or ("Feriado" if is_feriado else ""),
-                fecha_entrega=row.get("Fecha de entrega") or None,
-                horas_estimadas=row.get("Horas estimadas") or None,
-                facturable=parse_boolean(row.get("Facturable", "false")),
-                facturado=parse_boolean(row.get("Facturado", "false")),
-                precio_hora=row.get("Precio por hora") or None,
-                archivado=parse_boolean(row.get("Archivado", "false")),
+                lista_tareas=row_es.get("Lista de tareas") or None,
+                tarea=row_es.get("Tarea", "").strip() or ("Feriado" if is_feriado else ""),
+                fecha_entrega=row_es.get("Fecha de entrega") or None,
+                horas_estimadas=row_es.get("Horas estimadas") or None,
+                facturable=parse_boolean(row_es.get("Facturable", "false")),
+                facturado=parse_boolean(row_es.get("Facturado", "false")),
+                precio_hora=row_es.get("Precio por hora") or None,
+                archivado=parse_boolean(row_es.get("Archivado", "false")),
                 fecha_inicio=fecha_inicio,
                 fecha_fin=fecha_fin,
-                zona_horaria=row.get("Zona horaria", "").strip(),
+                zona_horaria=row_es.get("Zona horaria", "").strip(),
                 duracion_str=duracion_str,
                 horas=horas,
                 notas=notas_val,
-                total=row.get("Total") or None,
-                costo_hora=row.get("Costo por hora") or None,
-                costo=row.get("Costo") or None,
-                moneda=row.get("Moneda", "USD").strip(),
+                total=row_es.get("Total") or None,
+                costo_hora=row_es.get("Costo por hora") or None,
+                costo=row_es.get("Costo") or None,
+                moneda=row_es.get("Moneda", "USD").strip(),
             )
             entries.append(entry)
 

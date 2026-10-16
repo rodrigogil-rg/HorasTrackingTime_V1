@@ -20,11 +20,50 @@ REQUIRED_HEADERS = [
     "Horas",
 ]
 
+# Mapeo de encabezados en inglés a español para soportar archivos CSV exportados en inglés
+HEADER_MAP_EN_ES = {
+    "Service": "Servicio",
+    "Client": "Cliente",
+    "Project": "Proyecto",
+    "User": "Usuario",
+    "Task list": "Lista de tareas",
+    "Task": "Tarea",
+    "Due date": "Fecha de entrega",
+    "Estimated hours": "Horas estimadas",
+    "Billable": "Facturable",
+    "Billed": "Facturado",
+    "Hourly rate": "Precio por hora",
+    "Archived": "Archivado",
+    "Start date": "Fecha de inicio",
+    "End date": "Fecha de fin",
+    "Timezone": "Zona horaria",
+    "Duration": "Duración",
+    "Hours": "Horas",
+    "Notes": "Notas",
+    "Total": "Total",
+    "Hourly cost": "Costo por hora",
+    "Cost": "Costo",
+    "Currency": "Moneda",
+}
+
+
+def normalize_headers(headers: list[str]) -> list[str]:
+    """Normaliza encabezados traduciendo del inglés al español si es necesario."""
+    normalized = []
+    for h in headers:
+        h_clean = h.strip()
+        if h_clean in HEADER_MAP_EN_ES:
+            normalized.append(HEADER_MAP_EN_ES[h_clean])
+        else:
+            normalized.append(h_clean)
+    return normalized
+
 
 def validate_headers(headers: list[str]) -> None:
     """Verifica que todas las columnas obligatorias estén presentes en el CSV."""
+    normalized = normalize_headers(headers)
     for req in REQUIRED_HEADERS:
-        if req not in headers:
+        if req not in normalized:
             raise InvalidHeaderError(f"El CSV no contiene la columna requerida: {req}")
 
 
@@ -55,21 +94,24 @@ def parse_hours(val: str, row_idx: int) -> float:
 
 
 def parse_datetime(val: str, row_idx: int, field_name: str) -> datetime:
-    """Parsea cadenas de fecha/hora en formatos estándar y descarta información de zona horaria."""
+    """Parsea cadenas de fecha/hora en formatos estándar y descarta información de zona horaria.
+    Soporta formato 24-hour (HH:MM:SS) y 12-hour con AM/PM (hh:MM:SS AM/PM)."""
     if not val:
         raise InvalidDateError(f"Fila {row_idx}: valor vacío en '{field_name}'.")
     val_clean = val.strip()
-    try:
-        dt = datetime.strptime(val_clean, "%d/%m/%Y %H:%M:%S")  # noqa: DTZ007
-        return dt.replace(tzinfo=None)
-    except ValueError:
+    # Intentar formatos de fecha/hora
+    formats = [
+        "%d/%m/%Y %H:%M:%S",  # 24-hour: 03/08/2026 11:00:00
+        "%Y-%m-%d %H:%M:%S",  # ISO: 2026-08-03 11:00:00
+        "%d/%m/%Y %I:%M:%S %p",  # 12-hour con AM/PM: 07/01/2026 09:00:00 AM
+    ]
+    for fmt in formats:
         try:
-            dt = datetime.strptime(val_clean, "%Y-%m-%d %H:%M:%S")  # noqa: DTZ007
+            dt = datetime.strptime(val_clean, fmt)  # noqa: DTZ007
             return dt.replace(tzinfo=None)
-        except ValueError as exc:
-            raise InvalidDateError(
-                f"Fila {row_idx}: formato de fecha inválido en '{field_name}': '{val}'"
-            ) from exc
+        except ValueError:
+            continue
+    raise InvalidDateError(f"Fila {row_idx}: formato de fecha inválido en '{field_name}': '{val}'")
 
 
 def parse_duration(val: str, row_idx: int) -> str:
