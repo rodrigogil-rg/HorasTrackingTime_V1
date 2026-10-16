@@ -197,6 +197,11 @@ def write_excel(
     total_row = current_row
     ws_summary.row_dimensions[total_row].height = 20
 
+    # Calcular días trabajados totales únicos en todos los registros (no sumar por cliente
+    # para evitar contar fechas repetidas dos veces si un cliente trabajó varios días)
+    all_dates = {e.fecha for e in entries if e.fecha}
+    total_dias_trabajados = len(all_dates)
+
     cell_tot_a = ws_summary.cell(row=total_row, column=1, value="TOTAL GENERAL")
     cell_tot_a.font = font_total
     cell_tot_a.fill = fill_total
@@ -217,9 +222,11 @@ def write_excel(
     cell_tot_c.number_format = "#,##0"
     cell_tot_c.border = total_border
 
-    cell_tot_d = ws_summary.cell(row=total_row, column=4, value="")
+    cell_tot_d = ws_summary.cell(row=total_row, column=4, value=total_dias_trabajados)
     cell_tot_d.font = font_total
     cell_tot_d.fill = fill_total
+    cell_tot_d.alignment = align_right
+    cell_tot_d.number_format = "#,##0"
     cell_tot_d.border = total_border
 
     cell_tot_e = ws_summary.cell(row=total_row, column=5, value=f"=SUM(E4:E{total_row - 1})")

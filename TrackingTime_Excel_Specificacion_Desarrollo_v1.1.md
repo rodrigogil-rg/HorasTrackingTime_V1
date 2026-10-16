@@ -225,7 +225,7 @@ Los cálculos deben realizarse primero en Python.
 - A = `TOTAL GENERAL`
 - B = suma horas
 - C = suma registros
-- D = vacío
+- D = total de días trabajados únicos en todos los registros combinados (no suma por cliente, para evitar contar fechas repetidas dos veces si un cliente trabajó varios días para diferentes clientes)
 - E = suma porcentajes.
 
 Cuando corresponda, usar fórmulas como:
